@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Disc Golf Announcer",
+  "version": "1.0",
+  "description": "Live disc golf score announcer",
+  "permissions": ["activeTab", "storage"],
+  "host_permissions": ["https://discgolfmetrix.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://discgolfmetrix.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
