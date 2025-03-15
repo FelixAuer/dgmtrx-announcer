@@ -120,6 +120,7 @@ function checkForUpdates(currentScores) {
                     let playerStats = {
                         name: player,
                         totalScore: curr.totalScore,
+                        roundScore: curr.roundScore,
                         place: curr.place,
                         holesPlayed: curr.playedHoles,
                         result: result,
@@ -184,8 +185,8 @@ function generateTTSMessage(playerStats) {
             `Das ergibt aktuell den ${playerStats.place} Platz nach ${playerStats.holesPlayed} Löchern mit einem Gesamtergebnis von ${playerStats.totalScore}.`,
             `Nach dieser Bahn steht er bei ${playerStats.roundScore} in der Runde und ${playerStats.totalScore} insgesamt.`,
             `Damit liegt er aktuell bei einem Rundenergebnis von ${playerStats.roundScore} und Platz ${playerStats.place}.`,
-            `Sein Score für die Runde beträgt nach ${playerStats.holesPlayed} Bahnen nun ${playerStats.roundScore}, was ihm aktuell den ${playerStats.place} Platz einbringt.`,
-            `Das bringt ihn auf ein Gesamtergebnis von ${playerStats.totalScore} und den ${playerStats.place} Platz.`,
+            `Sein Score für die Runde beträgt nach ${playerStats.holesPlayed} Bahnen nun ${playerStats.roundScore}, was ihm aktuell den ${playerStats.place}. Platz einbringt.`,
+            `Das bringt ihn auf ein Gesamtergebnis von ${playerStats.totalScore} und den ${playerStats.place}. Platz.`,
             `Er hat jetzt ein Rundenergebnis von ${playerStats.roundScore} und liegt aktuell auf Platz ${playerStats.place}.`,
             `Mit diesem Ergebnis hat er nun ein Gesamtergebnis von ${playerStats.totalScore} und steht auf Platz ${playerStats.place}.`,
             `Sein aktueller Score für die Runde beträgt ${playerStats.roundScore}, insgesamt steht er bei ${playerStats.totalScore}.`,
