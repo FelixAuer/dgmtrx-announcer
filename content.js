@@ -173,8 +173,8 @@ function generateTTSMessage(playerStats) {
     text += playerStats.hole + " (par " + playerStats.par + ")"
     if (playerStats.holesPlayed === "F") {
         text += getRandomString([
-            ". Die Runde ist damit mit einem Score von " + playerStats.totalScore + " am " + playerStats.place + ". Platz beendet.",
-            "Und beendet die Runde mit " + playerStats.totalScore + " am " + playerStats.place + ". Platz beendet.",
+            ". Die Runde ist damit mit einem Score von " + playerStats.totalScore + " auf dem " + playerStats.place + ". Platz beendet.",
+            "Und beendet die Runde mit " + playerStats.totalScore + " auf dem " + playerStats.place + ". Platz beendet.",
             "Insgesamt wird das der " + playerStats.place + ". Platz mit einem Gesamtscore von " + playerStats.totalScore + "."
         ])
     } else {
