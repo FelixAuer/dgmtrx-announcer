@@ -174,7 +174,7 @@ function generateTTSMessage(playerStats) {
     if (playerStats.holesPlayed === "F") {
         text += getRandomString([
             ". Die Runde ist damit mit einem Score von " + playerStats.totalScore + " auf dem " + playerStats.place + ". Platz beendet.",
-            "Und beendet die Runde mit " + playerStats.totalScore + " auf dem " + playerStats.place + ". Platz beendet.",
+            "Und beendet die Runde mit " + playerStats.totalScore + " auf dem " + playerStats.place + ". Platz.",
             "Insgesamt wird das der " + playerStats.place + ". Platz mit einem Gesamtscore von " + playerStats.totalScore + "."
         ])
     } else {
