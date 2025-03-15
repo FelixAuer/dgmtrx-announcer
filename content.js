@@ -162,10 +162,10 @@ function generateTTSMessage(playerStats) {
         text += getRandomString(["", "", "", "", "", "", "", "", "", " Uh! ", " Auweh! ", " Uff! "])
     }
     if (playerStats.lastScore - playerStats.par === 2) {
-        text += getRandomString(["", "", "", "", "", "", " Das tut weh! ", " Na geh! ", " Auweh! "])
+        text += getRandomString(["", "", "", "", "", "", " Das tut weh! ", " Na geh! ", " Auweh! ", " Uh, da frisst er! "])
     }
     if (playerStats.lastScore - playerStats.par > 2) {
-        text += getRandomString(["", "", "", " Na scheiße! ", " Ay ay ay! ", " So ein Dreck! "])
+        text += getRandomString(["", "", "", " Na scheiße! ", " Ay ay ay! ", " So ein Dreck! ",  " Halt du durch, jetzt frisst er richtig! "])
     }
     text += playerStats.name;
     text += getRandomString([": ", " spielt", " hat"])
