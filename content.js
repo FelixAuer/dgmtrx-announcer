@@ -31,27 +31,44 @@ function getScores() {
     }
 
     // Now, gather the score data for each player
+    let currentPlayerName = "";
+    let currentPlace = ""
+    let round = 1;
     document.querySelectorAll("tbody tr[id^='id']").forEach(row => {
         const nameElement = row.querySelector(".player-cell");
         const played = row.querySelector("td[title='Played holes']"); // Last completed hole
         const scoreElement = row.querySelector(`td:nth-last-child(2)`); // Total score (second last column)
+        const roundScoreElement = row.querySelector(`td:nth-last-child(4)`); // Total score (second last column)
         const scoreCells = row.querySelectorAll("td"); // All cells with scores (birdie, bogey, etc.)
 
-        if (nameElement && scoreElement) {
-            const name = nameElement.textContent.trim();
+        if (nameElement) {
+            currentPlayerName = nameElement.textContent.trim()
+            round = 1;
+        } else {
+            round++
+        }
+        if (scoreCells[0].textContent.trim()) {
+            currentPlace = scoreCells[0].textContent.trim()
+        }
+
+        if (scoreElement) {
+            const name = currentPlayerName;
             const totalScore = scoreElement.textContent.trim();
+            const roundScore = roundScoreElement.textContent.trim();
             const playedHoles = played.textContent.trim();
-            const place = scoreCells[0].textContent.trim();
+            const place = currentPlace;
 
             // Initialize the player object with an empty score record for each hole
-            if (!players[name]) {
-                players[name] = {
-                    place,
-                    totalScore,
-                    playedHoles,
-                    holeScores: {} // Initialize empty hole scores
-                };
-            }
+            // if (!players[name]) {
+            players[name] = {
+                place,
+                totalScore,
+                playedHoles,
+                round,
+                roundScore,
+                holeScores: {} // Initialize empty hole scores
+            };
+            //   }
 
             // Loop through all hole columns to track the score for each hole
             for (let i = 0; i < parValues.length; i++) {
@@ -68,6 +85,7 @@ function getScores() {
         }
     });
 
+    console.log(players);
     return players;
 }
 
@@ -78,7 +96,6 @@ function checkForUpdates(currentScores) {
     localStorage.setItem('previousScores', JSON.stringify(currentScores));
 
     for (const player in currentScores) {
-        console.log(player);
         let isFollowed = selectedPlayers.includes(player)
         let isCool = false
         let newHole = false;
@@ -162,17 +179,44 @@ function generateTTSMessage(playerStats) {
         ])
     } else {
         text += getRandomString([
-            ". Gesamtscore: " + playerStats.totalScore,
-            "und steht damit auf " + playerStats.totalScore,
-            "und steht damit insgesamt auf " + playerStats.totalScore,
-            ". Über die Runde damit auf " + playerStats.totalScore,
-        ])
-        text += getRandomString([
-            " und am " + playerStats.place + ". Platz.",
-            ". Aktuell ist das der " + playerStats.place + ". Platz.",
-            " und steht am " + playerStats.place + ". Platz.",
-            " und liegt damit am " + playerStats.place + ". Platz.",
-        ])
+            `Und steht damit auf ${playerStats.roundScore} über die Runde und liegt am ${playerStats.place}. Platz.`,
+            `Das ist ein aktuelles Rundenergebnis nach ${playerStats.holesPlayed} von ${playerStats.roundScore} und ein Gesamtergebnis von ${playerStats.totalScore}.`,
+            `Das ergibt aktuell den ${playerStats.place} Platz nach ${playerStats.holesPlayed} Löchern mit einem Gesamtergebnis von ${playerStats.totalScore}.`,
+            `Nach dieser Bahn steht er bei ${playerStats.roundScore} in der Runde und ${playerStats.totalScore} insgesamt.`,
+            `Damit liegt er aktuell bei einem Rundenergebnis von ${playerStats.roundScore} und Platz ${playerStats.place}.`,
+            `Sein Score für die Runde beträgt nach ${playerStats.holesPlayed} Bahnen nun ${playerStats.roundScore}, was ihm aktuell den ${playerStats.place} Platz einbringt.`,
+            `Das bringt ihn auf ein Gesamtergebnis von ${playerStats.totalScore} und den ${playerStats.place} Platz.`,
+            `Er hat jetzt ein Rundenergebnis von ${playerStats.roundScore} und liegt aktuell auf Platz ${playerStats.place}.`,
+            `Mit diesem Ergebnis hat er nun ein Gesamtergebnis von ${playerStats.totalScore} und steht auf Platz ${playerStats.place}.`,
+            `Sein aktueller Score für die Runde beträgt ${playerStats.roundScore}, insgesamt steht er bei ${playerStats.totalScore}.`,
+            `Nach ${playerStats.holesPlayed} gespielten Bahnen liegt er bei ${playerStats.roundScore} für die Runde und ${playerStats.totalScore} insgesamt.`,
+            `Er beendet die Bahn mit einem Rundenscore von ${playerStats.roundScore} und einem Gesamtstand von ${playerStats.totalScore}.`,
+            `Das bringt ihn auf ${playerStats.roundScore} für die Runde und auf Platz ${playerStats.place}.`,
+            `Nach ${playerStats.holesPlayed} Löchern steht er bei ${playerStats.totalScore} und hält aktuell Platz ${playerStats.place}.`,
+            `Aktuell liegt er mit ${playerStats.totalScore} auf Platz ${playerStats.place}, mit einem Rundenergebnis von ${playerStats.roundScore}.`,
+            `Das bedeutet nun einen Gesamtscore von ${playerStats.totalScore} und den ${playerStats.place} Platz.`,
+            `Mit ${playerStats.roundScore} für die Runde hält er aktuell Platz ${playerStats.place}.`,
+            `Nach ${playerStats.holesPlayed} Bahnen steht er bei einem Rundenscore von ${playerStats.roundScore} und einem Gesamtstand von ${playerStats.totalScore}.`,
+            `Er hat damit nun einen Score von ${playerStats.totalScore} und Platz ${playerStats.place}.`,
+            `Diese Bahn bringt ihn auf ein Rundenergebnis von ${playerStats.roundScore} und ein Gesamtergebnis von ${playerStats.totalScore}.`,
+            `Sein aktueller Turnierstand: ${playerStats.totalScore}, mit ${playerStats.roundScore} für diese Runde.`,
+            `Nach ${playerStats.holesPlayed} gespielten Bahnen beträgt sein Rundenergebnis ${playerStats.roundScore} und sein Gesamtergebnis ${playerStats.totalScore}.`,
+            `Er spielt derzeit eine Runde mit ${playerStats.roundScore} und liegt insgesamt auf Platz ${playerStats.place}.`,
+            `Nach dieser Bahn liegt er mit ${playerStats.roundScore} für die Runde auf Platz ${playerStats.place}.`,
+            `Mit ${playerStats.totalScore} insgesamt bleibt er aktuell auf Platz ${playerStats.place}.`,
+            `Nach ${playerStats.holesPlayed} Bahnen hat er nun ein Rundenergebnis von ${playerStats.roundScore} und ein Gesamtergebnis von ${playerStats.totalScore}.`,
+            `Diese Runde bringt ihm aktuell ein Ergebnis von ${playerStats.roundScore}, was ihn auf Platz ${playerStats.place} platziert.`,
+            `Das ergibt aktuell ein Turniergesamtergebnis von ${playerStats.totalScore} und einen Platz von ${playerStats.place}.`,
+            `Seine aktuelle Runde steht bei ${playerStats.roundScore}, sein Gesamtscore beträgt ${playerStats.totalScore}.`,
+            `Nach dieser Bahn steht sein Rundenscore bei ${playerStats.roundScore} und sein Gesamtstand bei ${playerStats.totalScore}.`,
+            `Er hat nach ${playerStats.holesPlayed} Löchern ein Gesamtergebnis von ${playerStats.totalScore} und ein aktuelles Rundenergebnis von ${playerStats.roundScore}.`,
+            `Mit ${playerStats.roundScore} über die Runde sichert er sich momentan Platz ${playerStats.place} in der Division.`,
+            `Nach ${playerStats.holesPlayed} gespielten Bahnen hat er nun einen Rundenscore von ${playerStats.roundScore} und liegt insgesamt bei ${playerStats.totalScore}.`,
+            `Sein Rundenergebnis beträgt jetzt ${playerStats.roundScore}, insgesamt steht er bei ${playerStats.totalScore} nach ${playerStats.holesPlayed} Bahnen.`,
+            `Er beendet die Bahn mit ${playerStats.roundScore} für die Runde und einem Gesamtstand von ${playerStats.totalScore}.`,
+            `Er liegt jetzt mit ${playerStats.totalScore} auf Platz ${playerStats.place} mit einer Runde von ${playerStats.roundScore}.`,
+            `Mit diesem Score hat er nun ein Gesamtergebnis von ${playerStats.totalScore} und einen Rundenscore von ${playerStats.roundScore} nach ${playerStats.holesPlayed} Bahnen.`,
+        ]);
 
     }
     return text;
