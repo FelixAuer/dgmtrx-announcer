@@ -1,0 +1,19 @@
+{
+  "name": "dgmtrx-announcer",
+  "version": "1.0.0",
+  "description": "Chrome extension to announce disc golf scores",
+  "main": "dist/popup.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "vite": "^4.0.0",
+    "typescript": "^4.0.0",
+    "@types/chrome": "^0.0.190"
+  },
+  "keywords": ["chrome", "extension", "disc-golf", "announcer"],
+  "license": "MIT"
+}

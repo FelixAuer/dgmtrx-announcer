@@ -1,4 +1,3 @@
-/.idea/.gitignore
-/.idea/dgmtrx-announcer.iml
-/.idea/modules.xml
-/.idea/vcs.xml
+/.idea/
+/dist/
+/node_modules/
