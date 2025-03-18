@@ -1,35 +1,30 @@
 // Types for the DiscGolfMetrix response
 
-type Track = {
+export type TrackDgm = {
     Number: string;
     NumberAlt: string;
     Par: string;
 };
 
-type PlayerResult = {
+export type PlayerResultDgm = {
     Result: string;
     Diff: number;
-    BUE: string;
-    GRH: string;
-    OCP: string;
-    ICP: string;
-    IBP: string;
-    PEN: string;
 };
 
-type Player = {
+export type PlayerDgm = {
     UserID: string;
     ScorecardID: string;
     Name: string;
     CountryCode: string;
-    PlayerResults: PlayerResult[][];
+    PlayerResults: PlayerResultDgm[];
     Sum: number;
     Diff: number;
     Place: number;
     OrderNumber: number;
+    Group: string | null;
 };
 
-type Competition = {
+export type CompetitionDgm = {
     ID: number;
     Name: string;
     Type: string;
@@ -40,16 +35,16 @@ type Competition = {
     CourseName: string;
     CourseID: string;
     MetrixMode: string;
-    Results: Player[];
-    Tracks: Track[];
-    SubCompetitions: Competition[];
+    Results: PlayerDgm[];
+    Tracks: TrackDgm[];
+    SubCompetitions: CompetitionDgm[];
 };
 
 export class DiscGolfMetrixAPI {
     private static API_URL = "https://discgolfmetrix.com/api.php?content=result&id=3226256";
 
     // Function to fetch and parse the tournament data
-    public static async fetchTournamentData(): Promise<Competition | null> {
+    public static async fetchTournamentData(): Promise<CompetitionDgm | null> {
         try {
             const response = await fetch(this.API_URL);
             if (!response.ok) {
