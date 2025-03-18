@@ -39,9 +39,19 @@ async function fetchAndProcessTournamentData() {
         const newResults = Tournament.detectNewPlayerResults(newTournament, oldTournament);
         if (newResults.length > 0) {
             console.log("📢 New results detected:", newResults);
+            chrome.tabs.query({url: "*://*.discgolfmetrix.com/*"}, async (tabs) => {
+                if (tabs.length > 0) {
+                    const htmlData = await DiscGolfMetrixAPI.fetchTournamentHtml(newTournament.id)
+                    chrome.tabs.sendMessage(tabs[0].id!, {
+                        type: "NEW_DATA",
+                        htmlData: htmlData
+                    });
+                }
+            });
+
             newResults.forEach((result) => {
 
-                const announcement = AnnouncementGenerator.generateAnnouncements(result)
+                const announcement: string[] = AnnouncementGenerator.generateAnnouncements(result)
 
                 chrome.tabs.query({url: "*://*.discgolfmetrix.com/*"}, (tabs) => {
                     if (tabs.length > 0) {
@@ -122,13 +132,10 @@ chrome.runtime.onMessage.addListener(async (message) => {
     }
 });
 
-/**
- * Detects when a Metrix tab is opened/closed and adjusts fetching accordingly.
- */
 chrome.tabs.onUpdated.addListener(checkMetrixTab);
 chrome.tabs.onRemoved.addListener(checkMetrixTab);
 
 // Initialize broadcasting state when the worker starts
-initializeBroadcasting().then(r => {
+initializeBroadcasting().then(() => {
     console.log("🔄 Background script loaded");
 });

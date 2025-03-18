@@ -1,7 +1,12 @@
-chrome.runtime.onMessage.addListener((message) => {
+chrome.runtime.onMessage.addListener(async (message) => {
     if (message.type === "NEW_ANNOUNCEMENT") {
         const word = message.text;
         speakAnnouncement(word);
+    }
+    if (message.type === "NEW_DATA") {
+        // @ts-ignore
+        document.querySelector("#id_results").outerHTML = message.htmlData;
+        await addPlayerCheckboxes()
     }
 });
 
@@ -14,7 +19,6 @@ function speakAnnouncement(word: string): void {
 async function addPlayerCheckboxes() {
     // Retrieve previously saved selected players or use an empty array
     let savedSelectedPlayers = await loadFollowedPlayers()
-    console.log("loaded " + savedSelectedPlayers)
     // Select all player rows in the table
     document.querySelectorAll("tbody tr[id^='id']").forEach(row => {
         // Find the player's name element in the row

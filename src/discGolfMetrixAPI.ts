@@ -43,21 +43,35 @@ export type CompetitionDgm = {
 };
 
 export class DiscGolfMetrixAPI {
-    private static API_URL = "https://discgolfmetrix.com/api.php?content=result&id=";
+    private static API_URL_JSON = "https://discgolfmetrix.com/api.php?content=result&id=";
+    private static API_URL_HTML = "https://discgolfmetrix.com/api.php?content=result_html&id=";
 
     // Function to fetch and parse the tournament data
     public static async fetchTournamentData(tournamentId: string): Promise<CompetitionDgm | null> {
         try {
-            const response = await fetch(this.API_URL + tournamentId);
+            const response = await fetch(this.API_URL_JSON + tournamentId);
             if (!response.ok) {
                 throw new Error("Failed to fetch data from DiscGolfMetrix API");
             }
 
             const data = await response.json();
-            console.log(data)
             return data.Competition;
         } catch (error) {
             console.error("Error fetching tournament data:", error);
+            return null;
+        }
+    }
+
+    public static async fetchTournamentHtml(tournamentId: number): Promise<string | null> {
+        try {
+            const response = await fetch(this.API_URL_HTML + tournamentId);
+            if (!response.ok) {
+                throw new Error("Failed to fetch data from DiscGolfMetrix API");
+            }
+
+            return await response.text();
+        } catch (error) {
+            console.error("Error fetching tournament html:", error);
             return null;
         }
     }
