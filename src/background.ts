@@ -45,6 +45,7 @@ async function fetchAndProcessTournamentData() {
 
                 chrome.tabs.query({url: "*://*.discgolfmetrix.com/*"}, (tabs) => {
                     if (tabs.length > 0) {
+                        console.log(`Sending '${announcement}' to tab ${tabs[0].id}`);
                         announcement.forEach((announcement) => {
                             chrome.tabs.sendMessage(tabs[0].id!, {
                                 type: "NEW_ANNOUNCEMENT",

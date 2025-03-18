@@ -9,6 +9,7 @@ export type Hole = {
 
 export type Player = {
     userId: string;
+    followed: boolean;
     name: string;
     place: number;
     division: Division;
@@ -155,6 +156,7 @@ export class Tournament {
                         hole: hole,
                         playerRound: {
                             player: {
+                                followed: false,
                                 place: 1,
                                 userId: "",
                                 name: "",
@@ -203,7 +205,8 @@ export class Tournament {
 
             return round
         });
-        console.log(players)
+
+        players.forEach(async (player: Player) => player.followed = await isPlayerFollowed(player.name))
 
         // Update the tournament with the rounds we've processed
         tournament.rounds = rounds;
@@ -224,6 +227,7 @@ export class Tournament {
                 place: 0,
                 userId: playerDgm.UserID,  // Assuming you have a method to generate a unique ID
                 name: playerDgm.Name,
+                followed: false,
                 division: {name: "Default", players: []},  // Placeholder division, will be filled later
                 playerRounds: [],
             };
@@ -287,3 +291,8 @@ export class Tournament {
     }
 }
 
+async function isPlayerFollowed(playerName: string) {
+    const storedData = await chrome.storage.local.get("followedPlayers");
+    const followedPlayers = storedData["followedPlayers"] || [];
+    return followedPlayers.includes(playerName);
+}

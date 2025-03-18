@@ -70,7 +70,7 @@ function result(playerResult: PlayerResult): string {
 // Register the basic announcement rule
 AnnouncementGenerator.registerAnnouncement(new AnnouncementRule(
     [
-        (playerResult) => true  // No conditions, this will always trigger
+        (playerResult) => playerResult.player.followed  // No conditions, this will always trigger
     ],
     (playerResult) => {
         // Return the message in German
