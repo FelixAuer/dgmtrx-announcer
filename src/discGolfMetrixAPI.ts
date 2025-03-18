@@ -22,6 +22,7 @@ export type PlayerDgm = {
     Place: number;
     OrderNumber: number;
     Group: string | null;
+    ClassName: string | null;
 };
 
 export type CompetitionDgm = {
@@ -52,6 +53,7 @@ export class DiscGolfMetrixAPI {
             }
 
             const data = await response.json();
+            console.log(data)
             return data.Competition;
         } catch (error) {
             console.error("Error fetching tournament data:", error);

@@ -1,3 +1,5 @@
+import {CompetitionDgm, PlayerDgm, PlayerResultDgm, TrackDgm} from "./discGolfMetrixAPI";
+
 export type Hole = {
     holeNumber: number;
     name: string;
@@ -97,6 +99,182 @@ export class Tournament {
                     for (const result of playerRound.results) {
                         const oldResult = oldTournament.findOldResult(player.userId, result.hole.holeNumber, playerRound.round.number);
                         // If the result is new or has changed, add it to the list
+                        if (!oldResult) {
+                            newResults.push(result);
+                        }
+                    }
+                }
+            }
+        }
+
+        return newResults;
+    }
+
+
+    public static fromCompetition(apiData: CompetitionDgm): Tournament {
+        let {Name, CourseName, TourDateStart, TourDateEnd, Tracks, Type, SubCompetitions} = apiData;
+
+        const holes: Hole[] = Tracks.map((trackDgm: TrackDgm, trackIndex: number) => {
+            return {
+                holeNumber: trackIndex + 1,
+                name: trackDgm.NumberAlt,
+                par: parseInt(trackDgm.Par),
+                results: [] as PlayerResult[]
+            }
+        })
+
+        // Creating the tournament object with the basic fields
+        const tournament: Tournament = new Tournament(
+            apiData.ID,
+            Name,
+            TourDateStart,
+            TourDateEnd,
+            CourseName,
+            Type,
+            [], // Empty divisions for now
+            [], // Empty holes for now
+            [] // Empty rounds for now
+        );
+        if (SubCompetitions.length == 0) {
+            SubCompetitions = [apiData]
+        }
+        const players: Player[] = []
+        const divisions: Division[] = []
+        // Process rounds (SubCompetitions)
+        const rounds: Round[] = SubCompetitions.map((subCompetition: CompetitionDgm, roundIndex: number) => {
+            const playerRounds = subCompetition.Results.map((playerDgm: PlayerDgm): PlayerRound => {
+                const player = Tournament.findOrCreatePlayer(players, playerDgm)
+                const division = Tournament.findOrCreateDivision(divisions, playerDgm)
+                Tournament.addPlayerToDivision(division, player)
+                const playerResults = playerDgm.PlayerResults.map((playerResultDgm: PlayerResultDgm, holeIndex: number): PlayerResult => {
+                    const hole = holes[holeIndex]
+                    const playerResult: PlayerResult = {
+                        diff: playerResultDgm.Diff,
+                        result: playerResultDgm.Result,
+                        player: player,
+                        hole: hole,
+                        playerRound: {
+                            player: {
+                                place: 1,
+                                userId: "",
+                                name: "",
+                                division: {
+                                    name: "",
+                                    players: []
+                                },
+                                playerRounds: [],
+                            },
+                            results: [],
+                            sum: 0,
+                            diff: 0,
+                            round: {
+                                number: 0,
+                                playerRounds: []
+                            }
+                        }
+                    }
+                    hole.results.push(playerResult)
+                    return playerResult
+                }).filter((playerResult: PlayerResult) => playerResult.diff != undefined)
+                const playerRound = {
+                    player: player,
+                    diff: playerDgm.Diff,
+                    results: playerResults,
+                    round: {
+                        number: 0,
+                        playerRounds: []
+                    },
+                    sum: 0
+                }
+                playerResults.forEach((result) => {
+                    result.playerRound = playerRound
+                })
+                player.playerRounds.push(playerRound)
+                return playerRound
+            });
+
+            const round: Round = {
+                number: roundIndex + 1,
+                playerRounds: playerRounds
+            };
+            playerRounds.forEach((playerRound) => {
+                playerRound.round = round
+            })
+
+            return round
+        });
+        console.log(players)
+
+        // Update the tournament with the rounds we've processed
+        tournament.rounds = rounds;
+        tournament.divisions = divisions;
+        tournament.holes = holes;
+
+        return tournament;
+    }
+
+
+    private static findOrCreatePlayer(players: Player[], playerDgm: PlayerDgm): Player {
+        // Try to find the player by name
+        let player = players.find(p => p.userId === playerDgm.UserID);
+
+        // If player doesn't exist, create a new player and add to the array
+        if (!player) {
+            player = {
+                place: 0,
+                userId: playerDgm.UserID,  // Assuming you have a method to generate a unique ID
+                name: playerDgm.Name,
+                division: {name: "Default", players: []},  // Placeholder division, will be filled later
+                playerRounds: [],
+            };
+
+            // Add the new player to the players array
+            players.push(player);
+        }
+        player.place = playerDgm.Place
+
+        // Return the player (either existing or newly created)
+        return player;
+    }
+
+    private static findOrCreateDivision(divisions: Division[], playerDgm: PlayerDgm): Division {
+        // Try to find the player by name
+        const name = playerDgm.ClassName ?? "Alle Spieler"
+        let division = divisions.find(p => p.name === name);
+        // If player doesn't exist, create a new player and add to the array
+        if (!division) {
+            division = {
+                name: name,
+                players: []
+            };
+            divisions.push(division);
+        }
+
+        // Return the player (either existing or newly created)
+        return division;
+    }
+
+    private static addPlayerToDivision(division: Division, player: Player): void {
+        player.division = division;
+        // Check if the player is already in the division
+        const existingPlayer = division.players.find(p => p.userId === player.userId);
+
+        // If the player is not in the division, add them
+        if (!existingPlayer) {
+            division.players.push(player);
+        }
+    }
+
+    public static detectNewPlayerResults(newTournament: Tournament, oldTournament: Tournament): PlayerResult[] {
+        const newResults: PlayerResult[] = [];
+
+        for (const division of newTournament.divisions) {
+            for (const player of division.players) {
+                for (const playerRound of player.playerRounds) {
+                    for (const result of playerRound.results) {
+                        const oldResult = oldTournament.findOldResult(player.userId, result.hole.holeNumber, playerRound.round.number);
+
+                        // If no previous result exists, it's new
                         if (!oldResult) {
                             newResults.push(result);
                         }
