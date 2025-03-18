@@ -1,6 +1,8 @@
 import {CompetitionDgm, PlayerDgm, PlayerResultDgm, TrackDgm} from "./discGolfMetrixAPI";
 
 export type Hole = {
+    average: number;
+    difficulty: number;
     holeNumber: number;
     name: string;
     par: number;
@@ -117,6 +119,8 @@ export class Tournament {
 
         const holes: Hole[] = Tracks.map((trackDgm: TrackDgm, trackIndex: number) => {
             return {
+                average: 0,
+                difficulty: 0,
                 holeNumber: trackIndex + 1,
                 name: trackDgm.NumberAlt.length ? trackDgm.NumberAlt : (trackIndex + 1).toString(),
                 par: parseInt(trackDgm.Par),

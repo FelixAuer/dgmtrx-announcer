@@ -2,6 +2,7 @@ import {DiscGolfMetrixAPI} from "./discGolfMetrixAPI";
 import {Tournament} from "./tournament";
 import {TournamentStorage} from "./tournamentStorage";
 import {AnnouncementGenerator} from "./announcementGenerator";
+import {TournamentPreprocessorRegistry} from "./tournamentPreprocessing";
 
 let isBroadcasting = false;
 let intervalId: number | null = null;
@@ -36,6 +37,8 @@ async function fetchAndProcessTournamentData() {
     await TournamentStorage.store(competition); // Store latest API response
 
     if (oldTournament) {
+        TournamentPreprocessorRegistry.runPreprocessors(newTournament);
+        console.log(newTournament)
         const newResults = Tournament.detectNewPlayerResults(newTournament, oldTournament);
         if (newResults.length > 0) {
             console.log("📢 New results detected:", newResults);
