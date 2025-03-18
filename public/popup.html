@@ -5,10 +5,14 @@
     <style>
         body { width: 200px; font-family: Arial, sans-serif; text-align: center; }
         button { width: 100%; padding: 10px; margin-top: 10px; }
+        #url-info { font-size: 12px; margin-top: 10px; color: gray; }
+        #error-message { font-size: 12px; margin-top: 10px; color: red; }
     </style>
 </head>
 <body>
-<button id="toggle">Start Broadcast</button>
+<button id="toggle" style="display: none;">Start Broadcast</button>
+<div id="url-info">Current URL: N/A</div>
+<div id="error-message" style="display: none;">This page is not a valid Discgolfmetrix tournament page</div>
 <script src="popup.js"></script>
 </body>
 </html>

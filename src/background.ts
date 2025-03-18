@@ -1,6 +1,7 @@
 import {DiscGolfMetrixAPI} from "./discGolfMetrixAPI";
 import {Tournament} from "./tournament";
 import {TournamentStorage} from "./tournamentStorage";
+import {AnnouncementGenerator} from "./announcementGenerator";
 
 let isBroadcasting = false;
 let intervalId: number | null = null;
@@ -22,7 +23,9 @@ async function initializeBroadcasting() {
  * Fetch tournament data, compare it to previous data, and send new results to the content script.
  */
 async function fetchAndProcessTournamentData() {
-    const competition = await DiscGolfMetrixAPI.fetchTournamentData();
+    const data = await chrome.storage.local.get("tournamentId");
+    console.log("fetching data for " + data.tournamentId);
+    const competition = await DiscGolfMetrixAPI.fetchTournamentData(data.tournamentId);
     if (!competition) {
         console.log("❌ Error fetching tournament data");
         return;
@@ -36,24 +39,23 @@ async function fetchAndProcessTournamentData() {
         const newResults = Tournament.detectNewPlayerResults(newTournament, oldTournament);
         if (newResults.length > 0) {
             console.log("📢 New results detected:", newResults);
+            newResults.forEach((result) => {
 
+                const announcement = AnnouncementGenerator.generateAnnouncements(result)
+
+                chrome.tabs.query({url: "*://*.discgolfmetrix.com/*"}, (tabs) => {
+                    if (tabs.length > 0) {
+                        announcement.forEach((announcement) => {
+                            chrome.tabs.sendMessage(tabs[0].id!, {
+                                type: "NEW_ANNOUNCEMENT",
+                                text: announcement
+                            });
+                        })
+                    }
+                });
+            })
             // Send new results to the content script
-            chrome.tabs.query({url: "*://*.discgolfmetrix.com/*"}, (tabs) => {
-                if (tabs.length > 0) {
-                    newResults.forEach((result) => {
-                        chrome.tabs.sendMessage(tabs[0].id!, {
-                            type: "NEW_ANNOUNCEMENT",
-                            text: result.result
-                        }, (response) => {
-                            if (chrome.runtime.lastError) {
-                                console.warn("⚠️ Error sending to content script:", chrome.runtime.lastError.message);
-                            } else {
-                                console.log(`📨 Sent announcement: ${result.result}`);
-                            }
-                        });
-                    });
-                }
-            });
+
         } else {
             console.log("no new results")
         }
@@ -108,9 +110,14 @@ function checkMetrixTab(): void {
 chrome.runtime.onMessage.addListener(async (message) => {
     if (message.type === "TOGGLE_BROADCAST") {
         isBroadcasting = message.enabled;
+        const tournamentId = message.tournamentId
         await chrome.storage.local.set({isBroadcasting});
+        await chrome.storage.local.set({tournamentId});
         console.log(`🔘 Broadcast ${isBroadcasting ? "ON" : "OFF"}`);
         checkMetrixTab();
+        if (!isBroadcasting) {
+            stopFetchingTournamentData()
+        }
     }
 });
 

@@ -38,16 +38,17 @@ export type CompetitionDgm = {
     MetrixMode: string;
     Results: PlayerDgm[];
     Tracks: TrackDgm[];
+    HasSubcompetitions: boolean;
     SubCompetitions: CompetitionDgm[];
 };
 
 export class DiscGolfMetrixAPI {
-    private static API_URL = "https://discgolfmetrix.com/api.php?content=result&id=3226256";
+    private static API_URL = "https://discgolfmetrix.com/api.php?content=result&id=";
 
     // Function to fetch and parse the tournament data
-    public static async fetchTournamentData(): Promise<CompetitionDgm | null> {
+    public static async fetchTournamentData(tournamentId: string): Promise<CompetitionDgm | null> {
         try {
-            const response = await fetch(this.API_URL);
+            const response = await fetch(this.API_URL + tournamentId);
             if (!response.ok) {
                 throw new Error("Failed to fetch data from DiscGolfMetrix API");
             }

@@ -27,7 +27,7 @@ export type PlayerResult = {
     hole: Hole;  // Referencing hole directly by number
     player: Player;
     playerRound: PlayerRound;
-    result: string;
+    result: number;
     diff: number;
 };
 
@@ -117,7 +117,7 @@ export class Tournament {
         const holes: Hole[] = Tracks.map((trackDgm: TrackDgm, trackIndex: number) => {
             return {
                 holeNumber: trackIndex + 1,
-                name: trackDgm.NumberAlt,
+                name: trackDgm.NumberAlt.length ? trackDgm.NumberAlt : (trackIndex + 1).toString(),
                 par: parseInt(trackDgm.Par),
                 results: [] as PlayerResult[]
             }
@@ -135,7 +135,7 @@ export class Tournament {
             [], // Empty holes for now
             [] // Empty rounds for now
         );
-        if (SubCompetitions.length == 0) {
+        if (!apiData.HasSubcompetitions) {
             SubCompetitions = [apiData]
         }
         const players: Player[] = []
@@ -150,7 +150,7 @@ export class Tournament {
                     const hole = holes[holeIndex]
                     const playerResult: PlayerResult = {
                         diff: playerResultDgm.Diff,
-                        result: playerResultDgm.Result,
+                        result: parseInt(playerResultDgm.Result),
                         player: player,
                         hole: hole,
                         playerRound: {
