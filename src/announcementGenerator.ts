@@ -63,12 +63,14 @@ export class AnnouncementGenerator {
     static generateAnnouncements(data: PlayerResult): string[] {
         const rules = this.announcements.slice();
         rules.sort((a, b) => {
-            // First sort by order (ascending).
             if (a.getOrder() !== b.getOrder()) {
                 return a.getOrder() - b.getOrder();
             }
-            // Then by interest level (descending).
-            return b.getInterestLevel() - a.getInterestLevel();
+            if (a.getInterestLevel() !== b.getInterestLevel()) {
+                return b.getInterestLevel() - a.getInterestLevel();
+            }
+            // For equal order and interest, randomize order
+            return Math.random() - 0.5;
         });
 
         const usedTags = new Set<string>();
@@ -76,15 +78,14 @@ export class AnnouncementGenerator {
 
         // Process each rule in the sorted order.
         for (const rule of rules) {
+            const ruleTags = rule.getTags(data);
+            if (ruleTags.some(tag => usedTags.has(tag))) {
+                continue;
+            }
             if (rule.matches(data)) {
+                // Check if any of the rule's tags have already been used.
                 // Apply the rule's side effect before evaluating subsequent rules.
                 rule.apply(data);
-
-                // Check if any of the rule's tags have already been used.
-                const ruleTags = rule.getTags(data);
-                if (ruleTags.some(tag => usedTags.has(tag))) {
-                    continue;
-                }
 
                 // Generate the message and mark the rule's tags as used.
                 messages.push(rule.generateMessage(data));
