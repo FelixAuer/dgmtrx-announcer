@@ -3,6 +3,7 @@ import {Tournament} from "./tournament";
 import {TournamentStorage} from "./tournamentStorage";
 import {AnnouncementGenerator} from "./announcementGenerator";
 import {TournamentPreprocessorRegistry} from "./tournamentPreprocessing";
+import {registerAnnouncements} from "./announcements";
 
 let isBroadcasting = false;
 let intervalId: number | null = null;
@@ -142,3 +143,5 @@ chrome.tabs.onRemoved.addListener(checkMetrixTab);
 initializeBroadcasting().then(() => {
     console.log("🔄 Background script loaded");
 });
+
+registerAnnouncements()

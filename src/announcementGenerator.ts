@@ -11,21 +11,13 @@ export class AnnouncementRule {
         private message: (data: PlayerResult) => string,
         private tags: string[],
         private interestLevel: number,
-        private order: number,
-        private sideEffect?: (data: PlayerResult) => void
+        private order: number
     ) {
     }
 
     // Checks if all conditions are met.
     matches(data: PlayerResult): boolean {
         return this.conditions.every(condition => condition(data));
-    }
-
-    // Applies the side effect if defined.
-    apply(data: PlayerResult): void {
-        if (this.sideEffect) {
-            this.sideEffect(data);
-        }
     }
 
     // Generates the announcement text.
@@ -61,20 +53,20 @@ export class AnnouncementGenerator {
 
     // Given player result data, generate a list of announcement messages.
     static generateAnnouncements(data: PlayerResult): string[] {
+
+        console.log("rules")
+        console.log(this.announcements)
         const rules = this.announcements.slice();
+
+        // Sort primarily by interest level (descending), then random
         rules.sort((a, b) => {
-            if (a.getOrder() !== b.getOrder()) {
-                return a.getOrder() - b.getOrder();
-            }
             if (a.getInterestLevel() !== b.getInterestLevel()) {
                 return b.getInterestLevel() - a.getInterestLevel();
             }
-            // For equal order and interest, randomize order
-            return Math.random() - 0.5;
+            return Math.random() - 0.5; // Randomize equal priority announcements
         });
-
         const usedTags = new Set<string>();
-        const messages: string[] = [];
+        const messages: { order: number, message: string }[] = [];
 
         // Process each rule in the sorted order.
         for (const rule of rules) {
@@ -83,16 +75,14 @@ export class AnnouncementGenerator {
                 continue;
             }
             if (rule.matches(data)) {
-                // Check if any of the rule's tags have already been used.
-                // Apply the rule's side effect before evaluating subsequent rules.
-                rule.apply(data);
-
                 // Generate the message and mark the rule's tags as used.
-                messages.push(rule.generateMessage(data));
+                messages.push({order: rule.getOrder(), message: rule.generateMessage(data)});
                 ruleTags.forEach(tag => usedTags.add(tag));
             }
         }
-        return messages;
+
+        // Now sort messages by order (ascending) before returning
+        return messages.sort((a, b) => a.order - b.order).map(m => m.message);
     }
 }
 

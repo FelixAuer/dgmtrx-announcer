@@ -33,24 +33,19 @@ const exclamationRule = new AnnouncementRule(
         (data: PlayerResult) => data.diff <= -1
         // You can expand this condition to include "or better" if you add more types.
     ],
-    (data: PlayerResult) => {
+    () => {
         const exclamations = ["Yeah!", "Wow!", "Irre!", "I wear narrisch!"];
         return exclamations[Math.floor(Math.random() * exclamations.length)];
     },
     ["exclamation"],
     10,  // Interest level (can be adjusted)
-    1,    // Order: 1 means this rule's announcement will come first.
-    (data: PlayerResult) => {
-        // Side effect: mark player as followed so that later rules know the player is being followed.
-        data.player.followed = true;
-    }
+    1    // Order: 1 means this rule's announcement will come first.
 );
 
 // Basic score announcement: Always announce the basic score result.
 // This rule gets a higher order number (e.g., 2) so it plays after the exclamation rule.
 const basicAnnouncementRule = new AnnouncementRule(
     [
-        // No conditions (always true)
         (data) => data.player.followed
     ],
     (data: PlayerResult) => {
@@ -62,5 +57,7 @@ const basicAnnouncementRule = new AnnouncementRule(
 );
 
 // Register the rules.
-AnnouncementGenerator.register(exclamationRule);
-AnnouncementGenerator.register(basicAnnouncementRule);
+export function registerAnnouncements(){
+    AnnouncementGenerator.register(exclamationRule);
+    AnnouncementGenerator.register(basicAnnouncementRule);
+}
