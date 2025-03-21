@@ -53,17 +53,14 @@ export class AnnouncementGenerator {
 
     // Given player result data, generate a list of announcement messages.
     static generateAnnouncements(data: PlayerResult): string[] {
-
-        console.log("rules")
-        console.log(this.announcements)
         const rules = this.announcements.slice();
 
-        // Sort primarily by interest level (descending), then random
         rules.sort((a, b) => {
-            if (a.getInterestLevel() !== b.getInterestLevel()) {
-                return b.getInterestLevel() - a.getInterestLevel();
-            }
             return Math.random() - 0.5; // Randomize equal priority announcements
+        });
+        // Sort primarily by interest level (descending)
+        rules.sort((a, b) => {
+            return b.getInterestLevel() - a.getInterestLevel();
         });
         const usedTags = new Set<string>();
         const messages: { order: number, message: string }[] = [];

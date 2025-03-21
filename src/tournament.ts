@@ -10,10 +10,15 @@ export type Hole = {
 };
 
 export type Player = {
+    sum: number;
+    diff: number;
     userId: string;
     followed: boolean;
     name: string;
     place: number;
+    isTopThird: boolean;
+    isMiddleThird: boolean;
+    isBottomThird: boolean;
     division: Division;
     playerRounds: PlayerRound[];  // Player's rounds
 };
@@ -30,6 +35,7 @@ export type PlayerResult = {
     hole: Hole;  // Referencing hole directly by number
     player: Player;
     playerRound: PlayerRound;
+    tournament: Tournament | null;
     result: number;
     diff: number;
 };
@@ -54,6 +60,7 @@ export class Tournament {
     divisions: Division[];  // Multiple divisions
     holes: Hole[];  // Holes tracked across all rounds/divisions
     rounds: Round[];
+    players: Player[];
 
     constructor(
         id: number,
@@ -64,7 +71,8 @@ export class Tournament {
         competitionType: string,
         divisions: Division[],
         holes: Hole[],
-        rounds: Round[]
+        rounds: Round[],
+        players: Player[],
     ) {
         this.id = id;
         this.name = name;
@@ -75,6 +83,7 @@ export class Tournament {
         this.divisions = divisions;
         this.holes = holes;
         this.rounds = rounds;
+        this.players = players;
     }
 
     // Helper method to find a specific player result in the old tournament data
@@ -138,7 +147,8 @@ export class Tournament {
             Type,
             [], // Empty divisions for now
             [], // Empty holes for now
-            [] // Empty rounds for now
+            [], // Empty rounds for now
+            []
         );
         if (!apiData.HasSubcompetitions) {
             SubCompetitions = [apiData]
@@ -154,12 +164,15 @@ export class Tournament {
                 const playerResults = playerDgm.PlayerResults.map((playerResultDgm: PlayerResultDgm, holeIndex: number): PlayerResult => {
                     const hole = holes[holeIndex]
                     const playerResult: PlayerResult = {
+                        tournament: null,
                         diff: playerResultDgm.Diff,
                         result: parseInt(playerResultDgm.Result),
                         player: player,
                         hole: hole,
                         playerRound: {
                             player: {
+                                diff: 0,
+                                sum: 0,
                                 followed: false,
                                 place: 1,
                                 userId: "",
@@ -169,6 +182,9 @@ export class Tournament {
                                     players: []
                                 },
                                 playerRounds: [],
+                                isTopThird: false,
+                                isBottomThird: false,
+                                isMiddleThird: false,
                             },
                             results: [],
                             sum: 0,
@@ -210,12 +226,21 @@ export class Tournament {
             return round
         });
 
-        players.forEach(async (player: Player) => player.followed = await isPlayerFollowed(player.name))
+        players.forEach(async (player: Player) => {
+            player.followed = await isPlayerFollowed(player.name)
+            player.playerRounds.forEach((playerRound: PlayerRound) => {
+                playerRound.sum = playerRound.results.map((result: PlayerResult) => result.result).reduce((a, b) => a + b, 0);
+                playerRound.diff = playerRound.results.map((result: PlayerResult) => result.diff).reduce((a, b) => a + b, 0);
+            })
+            player.diff = player.playerRounds.map((result: PlayerRound) => result.diff).reduce((a, b) => a + b, 0);
+            player.sum = player.playerRounds.map((result: PlayerRound) => result.sum).reduce((a, b) => a + b, 0);
+        })
 
         // Update the tournament with the rounds we've processed
         tournament.rounds = rounds;
         tournament.divisions = divisions;
         tournament.holes = holes;
+        tournament.players = players;
 
         return tournament;
     }
@@ -229,11 +254,16 @@ export class Tournament {
         if (!player) {
             player = {
                 place: 0,
+                diff: 0,
+                sum: 0,
                 userId: playerDgm.UserID,  // Assuming you have a method to generate a unique ID
                 name: playerDgm.Name,
                 followed: false,
                 division: {name: "Default", players: []},  // Placeholder division, will be filled later
                 playerRounds: [],
+                isTopThird: false,
+                isBottomThird: false,
+                isMiddleThird: false,
             };
 
             // Add the new player to the players array

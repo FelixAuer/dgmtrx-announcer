@@ -53,7 +53,7 @@ class HoleRankingPreprocessor implements TournamentPreprocessor {
             const diff = (hole.average !== undefined && hole.average !== 0)
                 ? hole.average - hole.par
                 : 0;
-            return { hole, diff };
+            return {hole, diff};
         });
 
         // Sort the holes in ascending order of diff.
@@ -68,5 +68,39 @@ class HoleRankingPreprocessor implements TournamentPreprocessor {
     }
 }
 
+class LinkTournamentPreprocessor implements TournamentPreprocessor {
+    process(tournament: Tournament): void {
+        tournament.players.forEach(player => {
+            player.playerRounds.forEach(round => {
+                round.results.forEach((result) => {
+                    result.tournament = tournament
+                })
+            })
+        });
+    }
+}
+
+class ThirdsPreprocessor implements TournamentPreprocessor {
+    process(tournament: Tournament): void {
+        tournament.players.forEach(player => {
+            player.playerRounds.forEach(round => {
+                const division = player.division;
+
+                const totalPlayers = division.players.length;
+
+                const middleStart = Math.floor(totalPlayers / 3); // 33% of the players
+                const middleEnd = Math.floor((2 * totalPlayers) / 3); // 66% of the players
+
+                player.isTopThird = player.place < middleStart;
+                player.isMiddleThird = player.place >= middleStart && player.place <= middleEnd;
+                player.isBottomThird = player.place > middleEnd;
+
+            })
+        });
+    }
+}
+
+TournamentPreprocessorRegistry.register(new ThirdsPreprocessor());
+TournamentPreprocessorRegistry.register(new LinkTournamentPreprocessor());
 TournamentPreprocessorRegistry.register(new AverageScorePreprocessor());
 TournamentPreprocessorRegistry.register(new HoleRankingPreprocessor());
